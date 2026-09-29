@@ -1,0 +1,40 @@
+models:
+  # YOLO option. Paths are resolved relative to this YAML file.
+  floc_segmentation:
+    backend: ultralytics
+    weights: models/floc_segmentation.pt
+  microorganism_detection:
+    backend: ultralytics
+    weights: models/microorganism_detection.pt
+
+  # COCO/torchvision option (uncomment instead of the corresponding block above):
+  # floc_segmentation:
+  #   backend: torchvision
+  #   architecture: maskrcnn_resnet50_fpn_v2
+  #   weights: models/floc_maskrcnn.pt
+  #   coco_annotations: annotations/floc_instances.json
+  # microorganism_detection:
+  #   backend: torchvision
+  #   architecture: fasterrcnn_resnet50_fpn_v2
+  #   weights: models/microorganisms_fasterrcnn.pt
+  #   coco_annotations: annotations/microorganism_instances.json
+
+inference:
+  device: cpu             # cpu, 0, 1, ...
+  image_size: 960
+  floc_confidence: 0.25
+  microorganism_confidence: 0.25
+  iou_threshold: 0.60
+  max_detections: 300
+  floc_class_name: floc
+
+# The seven v1 classes from the technical specification. They are always
+# present as columns in the aggregate output, even when their count is zero.
+microorganism_classes:
+  - attached_ciliates
+  - filamentous_bacteria
+  - rotifers
+  - testate_amoebae
+  - free_swimming_ciliates
+  - nematoda
+  - gastrotrichs
