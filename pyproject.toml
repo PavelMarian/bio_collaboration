@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "active-sludge-cv"
+version = "1.0.0"
+description = "Inference pipeline for activated-sludge floc segmentation, morphometry and microorganism detection"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "opencv-python-headless>=4.6",
+  "PyYAML>=6.0",
+  "torch>=2.0",
+  "torchvision>=0.15",
+  "ultralytics>=8.0",
+]
+
+[project.optional-dependencies]
+rle = ["pycocotools>=2.0.7"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+active-sludge-cv = "cli:main"
+
+[tool.setuptools]
+py-modules = ["cli"]
+
+[tool.setuptools.packages.find]
+include = ["cv_module*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
