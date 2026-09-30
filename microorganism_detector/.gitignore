@@ -1,0 +1,22 @@
+# Environment, caches and build products
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.env
+.env.*
+
+# Weights come from the release; data and run results stay local
+weights/
+data/
+outputs/
+experiments/
+runs/
+*.pt
+*.pth
+*.onnx

@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sludge-micro"
+version = "0.1.0"
+description = "Microorganism detector for activated-sludge microscopy images"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy",
+  "opencv-python-headless",
+  "pandas",
+  "pillow",
+  "pyarrow",
+  "pydantic>=2",
+  "PyYAML",
+  "torch",
+  "torchvision",
+]
+
+[project.optional-dependencies]
+dev = ["black", "pytest", "ruff"]
+
+[project.scripts]
+sludge-micro = "sludge_micro.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sludge_micro = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "ANN", "BLE", "N", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -p no:cacheprovider --import-mode=importlib"
+markers = ["slow: tests that build a full detector on CPU"]

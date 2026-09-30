@@ -1,0 +1,161 @@
+# Working configuration of the microorganism detector.
+# Paths are relative to the project root (the directory with pyproject.toml).
+# Every numeric value carries its rationale in a comment.
+version: 1
+
+paths:
+  raw_dir: data/raw/размечено FINAL
+  processed_dir: data/processed
+  experiments_dir: experiments
+  outputs_dir: outputs
+  # COCO weights that training starts from, downloaded once from the official torchvision
+  # source (see README); the program never downloads, inference of a trained model never
+  # needs them.
+  pretrained_weights: outputs/pretrained/fasterrcnn_resnet50_fpn_v2_coco-dd69338a.pth
+  # The Pavel pipeline: the repository root that holds the cv_module package.
+  pavel_pipeline: ..
+
+# priority: lower value wins when pixel-identical copies carry consistent annotations.
+# The archive marked CHECKED goes first, the rest follow the archive number.
+sources:
+  - {id: student_11, archive: Student_11 CHECKED.zip, format: coco, role: microorganisms, priority: 0}
+  - {id: student_01, archive: Student_1.zip, format: coco, role: microorganisms, priority: 1}
+  - {id: student_02, archive: Student_2.zip, format: coco, role: microorganisms, priority: 2}
+  - {id: student_04, archive: Student_4.zip, format: coco, role: microorganisms, priority: 4}
+  - {id: student_06, archive: Student_6.zip, format: coco, role: microorganisms, priority: 6}
+  - {id: student_07, archive: Student_7.zip, format: coco, role: microorganisms, priority: 7}
+  - {id: student_08, archive: Student_8.zip, format: coco, role: microorganisms, priority: 8}
+  - {id: student_09, archive: Student_9.zip, format: coco, role: microorganisms, priority: 9}
+  - {id: student_10, archive: Student_10.zip, format: coco, role: microorganisms, priority: 10}
+  - {id: session_2024_01_31, archive: 31.01.24.zip, format: coco, role: microorganisms, priority: 12}
+  - {id: floc_coco_100, archive: 100 фото флокул COCO.zip, format: coco, role: floc, priority: 20}
+  - {id: floc_yolo_100, archive: 100 фото флокул YOLO.zip, format: yolo, role: floc, priority: 21}
+  - {id: floc_coco_1000, archive: 1000 фото флокул COCO.zip, format: coco, role: floc, priority: 22}
+  - {id: floc_yolo_1000, archive: 1000 фото флокул YOLO.zip, format: yolo, role: floc, priority: 23}
+  - {id: external_md_as, archive: annotated dataset.zip, format: voc, role: external, priority: 30}
+
+# label is the internal model output index; 0 is the detector background.
+# source_category_id is the COCO id verified by the audit in every microorganism archive.
+classes:
+  target:
+    - {name: attached_ciliates, title: Прикреплённые инфузории, source_category: attached_ciliates, source_category_id: 2, label: 1}
+    - {name: filamentous_bacteria, title: Нитчатые бактерии, source_category: filamentous_bacteria, source_category_id: 5, label: 2}
+    - {name: rotifers, title: Коловратки, source_category: rotifers, source_category_id: 3, label: 3}
+    - {name: testate_amoebae, title: Раковинные амёбы, source_category: testate_amoebae, source_category_id: 9, label: 4}
+    - {name: free_swimming_ciliates, title: Свободноплавающие инфузории, source_category: free_swimming_ciliates, source_category_id: 4, label: 5}
+    - {name: nematoda, title: Нематоды, source_category: nematoda, source_category_id: 14, label: 6}
+    - {name: gastrotrichs, title: Брюхоресничные, source_category: gastrotrichs, source_category_id: 7, label: 7}
+  background: [debris]
+  ignore: [unknown, custom_microorganism]
+  out_of_scope: [fungi, flagellates, aeolosoma, naked_amoebae, suctoria]
+  not_detected: [floc, Active sludge floc]
+
+# MD-AS-2025 candidate. Kept out of training until the class schemes are reconciled.
+external:
+  enabled: false
+  source_id: external_md_as
+  class_map: {Ar: testate_amoebae, Do: rotifers, Mo: rotifers, Ne: nematoda, Eu: free_swimming_ciliates}
+
+audit:
+  image_suffixes: [.jpg, .jpeg, .bmp]
+  # Input resolution required by the task specification.
+  expected_width: 1280
+  expected_height: 960
+  # 16 x 16 difference hash gives 256 bits and ignores resolution and encoding.
+  dhash_size: 16
+  # About 4 % of 256 bits. Pixel-identical copies have distance 0, frames of the same
+  # field of view differ by a few bits; the audit report records the distance profile.
+  near_duplicate_max_hamming: 10
+  # Two boxes of the same class on pixel-identical copies describe the same object.
+  duplicate_match_iou: 0.9
+  # One pixel absorbs polygon rounding at the image border; larger overflow is an error.
+  bbox_tolerance_px: 1.0
+
+prepare:
+  # unknown and custom_microorganism become ignore regions (label -100): they may hide targets.
+  ignore_policy: ignore_label
+  # Images without target objects are not confirmed negatives and stay out of the set.
+  unconfirmed_empty_policy: exclude
+  conflicting_duplicate_policy: exclude_group
+  bbox_policy: coco_bbox_then_polygon
+
+split:
+  protocol: temporal
+  confirmed_time_sources: [exif_datetime_original, owner_metadata]
+  owner_metadata: null
+  train_end: null
+  validation_end: null
+  boundary_group_policy: group_to_later_split
+  # Proposal rule for boundaries once dates exist: day boundaries closest to these shares
+  # of images; about a fifth of the set keeps each of validation and test above the
+  # rarest-class image counts that the prepare step reports.
+  target_fractions: {train: 0.6, validation: 0.2, test: 0.2}
+
+model:
+  architecture: fasterrcnn_resnet50_fpn_v2
+  # Native 1280 x 960 input: the short side 960 and the long side 1280 keep scale 1.
+  min_size: 960
+  max_size: 1280
+  # torchvision default for fine-tuning a COCO detector.
+  trainable_backbone_layers: 3
+
+# Control run: values of the reference checkpoint config without rotation and sampling.
+train:
+  epochs: 15
+  batch_size: 1
+  accumulate: 2
+  lr: 0.0025
+  # torchvision detection reference value for SGD.
+  momentum: 0.9
+  weight_decay: 0.0005
+  sampling: none
+  # Flips, when enabled, use an unbiased coin.
+  augment: {rotation90: false, hflip: false, vflip: false, flip_probability: 0.5}
+  # BatchNorm while torchvision detectors train: `batch` uses each batch's own statistics and
+  # updates the stored ones; `frozen` keeps the stored statistics, as inference does. With
+  # one image per batch `frozen` is the regime of the delivered model.
+  batchnorm: batch
+
+evaluation:
+  # PASCAL VOC criterion; the reference experiment does not record its own.
+  iou_threshold: 0.5
+  # A detection that lies mostly inside an ignore region is neither TP nor FP.
+  ignore_ioa_threshold: 0.5
+  matching: greedy_by_confidence
+  unsupported_class_policy: exclude_if_no_support_and_no_predictions
+  # Same 0.05 step as the confidence values in the reference history.
+  confidence_grid: {start: 0.05, stop: 0.95, step: 0.05}
+  selection_tie_break: higher_confidence
+
+# torchvision defaults of Faster R-CNN; the Pavel torchvision backend applies the same values.
+postprocess:
+  min_score: 0.05
+  nms_iou: 0.5
+  max_detections: 100
+
+protocol:
+  primary_metric: macro_f1
+  acceptance: candidate_greater_than_control
+  per_class_constraints: null
+  # Control plus two single-change hypotheses from the reference experiment.
+  max_runs: 3
+  max_epochs_per_run: 15
+
+# Variants for copies with conflicting annotation (data/processed/variants).
+# exclude_conflicts equals the working policy above; the others keep the copy of one
+# archive. Biologists confirmed the Student_6 annotation for these conflicts, and the
+# delivered model was trained on prefer_student_6.
+duplicate_variants:
+  exclude_conflicts: null
+  prefer_student_6: student_06
+  prefer_student_7: student_07
+  prefer_student_8: student_08
+
+runtime:
+  seed: 20260929
+  # Fixed thread count keeps CPU reductions reproducible.
+  threads: 4
+  # In-process loading keeps sample order and augmentation independent of worker scheduling.
+  loader_workers: 0
+  device: cpu
+  deterministic: true
