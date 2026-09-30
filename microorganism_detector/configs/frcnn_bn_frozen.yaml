@@ -1,0 +1,33 @@
+# Training recipe of the delivered model frcnn_bn_frozen (model/passport.json): the Student_6
+# annotation for conflicting copies, a non-temporal group split approved by the project owner,
+# training without images that hold ignore regions and BatchNorm layers kept on their COCO
+# statistics. Every other setting comes from microorganisms.yaml. Retraining needs the
+# annotated archives under paths.raw_dir and the COCO weights under paths.pretrained_weights,
+# see README.
+extends: microorganisms.yaml
+prepare:
+  variant: prefer_student_6
+split:
+  protocol: group
+  alternative_approval: >-
+    Owner decision of 2026-09-29: research training on a non-temporal grouped split;
+    unknown capture dates are not reconstructed.
+  grouping:
+    # ORB matches between different scenes stay at or below 15 RANSAC inliers; the weakest
+    # confirmed shared field of view has 21.
+    orb_min_inliers: 20
+    orb_features: 1500
+    # Ratio test value of the original keypoint matching method.
+    orb_ratio: 0.75
+    orb_ransac_px: 3.0
+    orb_image_width: 640
+    filename_series: true
+    sampling_point_tokens: true
+    unmarked_per_session: true
+    search_iterations: 1000
+train:
+  exclude_ignore_images: true
+  batchnorm: frozen
+protocol:
+  # One training run of this recipe.
+  max_runs: 1
