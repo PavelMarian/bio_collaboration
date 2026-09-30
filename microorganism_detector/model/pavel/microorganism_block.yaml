@@ -1,0 +1,17 @@
+inference:
+  max_detections: 100
+  microorganism_confidence: 0.2
+microorganism_classes:
+- attached_ciliates
+- filamentous_bacteria
+- rotifers
+- testate_amoebae
+- free_swimming_ciliates
+- nematoda
+- gastrotrichs
+models:
+  microorganism_detection:
+    architecture: fasterrcnn_resnet50_fpn_v2
+    backend: torchvision
+    coco_annotations: annotations/microorganism_instances.json
+    weights: models/microorganisms_fasterrcnn.pt
