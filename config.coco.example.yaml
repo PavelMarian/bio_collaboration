@@ -14,7 +14,7 @@ inference:
   device: cpu
   image_size: 960
   floc_confidence: 0.25
-  microorganism_confidence: 0.25
+  microorganism_confidence: 0.20
   iou_threshold: 0.60
   max_detections: 300
   floc_class_name: floc

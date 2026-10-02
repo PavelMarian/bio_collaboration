@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -78,3 +79,15 @@ def test_coco_backend_config_uses_yaml_relative_paths(tmp_path):
     assert config.microorganism_backend == "ultralytics"
     assert config.floc_model == (tmp_path / "models" / "floc.pt").resolve()
     assert config.floc_coco_annotations == (tmp_path / "annotations" / "floc.json").resolve()
+
+
+def test_coco_example_config_matches_detector_label_order():
+    root = Path(__file__).resolve().parents[1]
+    config = load_config(root / "config.coco.example.yaml")
+    assert config.microorganism_backend == "torchvision"
+    assert config.microorganism_architecture == "fasterrcnn_resnet50_fpn_v2"
+    assert config.microorganism_model == (root / "models" / "microorganisms_fasterrcnn.pt").resolve()
+    assert config.microorganism_coco_annotations == (root / "annotations" / "microorganism_instances.json").resolve()
+    assert read_coco_categories(config.microorganism_coco_annotations) == DEFAULT_CLASSES
+    assert config.microorganism_classes == DEFAULT_CLASSES
+    assert config.microorganism_confidence == 0.20

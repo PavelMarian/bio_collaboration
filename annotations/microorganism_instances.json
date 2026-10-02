@@ -1,0 +1,41 @@
+{
+  "images": [],
+  "annotations": [],
+  "categories": [
+    {
+      "id": 1,
+      "name": "attached_ciliates",
+      "supercategory": "microorganism"
+    },
+    {
+      "id": 2,
+      "name": "filamentous_bacteria",
+      "supercategory": "microorganism"
+    },
+    {
+      "id": 3,
+      "name": "rotifers",
+      "supercategory": "microorganism"
+    },
+    {
+      "id": 4,
+      "name": "testate_amoebae",
+      "supercategory": "microorganism"
+    },
+    {
+      "id": 5,
+      "name": "free_swimming_ciliates",
+      "supercategory": "microorganism"
+    },
+    {
+      "id": 6,
+      "name": "nematoda",
+      "supercategory": "microorganism"
+    },
+    {
+      "id": 7,
+      "name": "gastrotrichs",
+      "supercategory": "microorganism"
+    }
+  ]
+}
