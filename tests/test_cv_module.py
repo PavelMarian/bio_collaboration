@@ -86,7 +86,7 @@ def test_coco_example_config_matches_detector_label_order():
     config = load_config(root / "config.coco.example.yaml")
     assert config.microorganism_backend == "torchvision"
     assert config.microorganism_architecture == "fasterrcnn_resnet50_fpn_v2"
-    assert config.microorganism_model == (root / "models" / "microorganisms_fasterrcnn.pt").resolve()
+    assert config.microorganism_model == (root / "models" / "microorganisms_fasterrcnn_finetune.pt").resolve()
     assert config.microorganism_coco_annotations == (root / "annotations" / "microorganism_instances.json").resolve()
     assert read_coco_categories(config.microorganism_coco_annotations) == DEFAULT_CLASSES
     assert config.microorganism_classes == DEFAULT_CLASSES

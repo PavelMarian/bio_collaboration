@@ -7,7 +7,7 @@ models:
   microorganism_detection:
     backend: torchvision
     architecture: fasterrcnn_resnet50_fpn_v2
-    weights: models/microorganisms_fasterrcnn.pt
+    weights: models/microorganisms_fasterrcnn_finetune.pt
     coco_annotations: annotations/microorganism_instances.json
 
 inference:
